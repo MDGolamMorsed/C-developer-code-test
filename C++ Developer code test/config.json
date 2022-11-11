@@ -1,0 +1,21 @@
+{
+    "WDT": 3,
+    /*value will be greater than 2 as i use delay to smooth serial print*/
+    "blockTask": 0  ,
+    /*value will be 0 or 1. 0 means task will not be block and WDT will not reset*/
+    "taskList": [
+        {
+            "task": "check network"
+            /*dummy task name*/
+        },
+        {
+            "task": "check mac address"
+        },
+        {
+            "task": "check CPU temperature"
+        },
+        {
+            "task": "check network"
+        }
+    ]
+}
