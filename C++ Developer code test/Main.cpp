@@ -2,7 +2,7 @@
 Author: MD Golam Morsed
 Mail: golammorsed6@gmail.com
 background: i have completed Task 1 from "C++ Developer code test.doc"
-Task list: i have made separe file for different task and just integrade in this file and create thread.
+Task list: i have made separate file for different task and just integrate in this file and create thread.
 1. JSON file load and create task base on json file parameter
 2. check json file is modified or not.
 3. if json file is modified or WDT is reset then task will be terminated and again update json file will be loaded
