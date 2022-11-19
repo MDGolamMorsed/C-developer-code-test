@@ -6,23 +6,30 @@
 #include <pthread.h>
 #include <windows.h>
 
+#include <tlhelp32.h>
+#include <vector>
+
 #include "taskCreateFromJsonFile.h"
 #include "checkFileModification.h"
 #include "logFileHandling.h"
 #include "wdtHandler.h"
 
 using namespace std;
+using std::wstring;
 
 uint8_t taskKillCount = 0, totalTask;
 bool blockTaskFlag;
 
 void *taskCreate(void *id);
+void killProcessByName(const char *filename);
+bool checkFileStatus(const char *fileName);
 
 void jsonFileLoad()
 {
     while (1)
     {
-        if ((fileModifiedFlag || wdtResetFlag) && (totalTask == taskKillCount))
+        // if ((fileModifiedFlag || wdtResetFlag) && (totalTask == taskKillCount))
+        if (1)
         {
             cout << "############################# json file load ########################\n";
             fileModifiedFlag = 0;
@@ -45,18 +52,27 @@ void jsonFileLoad()
             for (int i = 0; i < totalTask; i++)
             {
                 cout << "Task " << i << " parameter" << endl;
-                cout << "task: " << characters[i]["task"].asString() << endl;
+                string taskName = characters[i]["task"].asString();
+                cout << "task: " << taskName << endl;
                 // blockTaskFlag = characters[i]["blockTask"].asUInt();
                 // cout << "blockTask: " << blockTaskFlag << endl;
 
+                bool result = checkFileStatus(taskName.c_str());
+                cout << result;
+                if (!result)
+                {
+                    system(taskName.c_str());
+                    writeFile("Task is killed successfully\n");
+                }
+
                 cout << endl;
 
-                int ret = pthread_create(&my_thread[i], NULL, &taskCreate, (void *)i);
-                if (ret != 0)
-                {
-                    printf("Error: pthread_create() failed\n");
-                    exit(EXIT_FAILURE);
-                }
+                // int ret = pthread_create(&my_thread[i], NULL, &taskCreate, (void *)i);
+                // if (ret != 0)
+                // {
+                //     printf("Error: pthread_create() failed\n");
+                //     exit(EXIT_FAILURE);
+                // }
 
                 writeFile("Task create successfully\n");
             }
@@ -96,5 +112,60 @@ void *taskCreate(void *id)
             cout << taskKillCount;
             break;
         }
+    }
+}
+
+void killProcessByName(const char *filename)
+{
+    HANDLE hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPALL, NULL);
+    PROCESSENTRY32 pEntry;
+    pEntry.dwSize = sizeof(pEntry);
+    BOOL hRes = Process32First(hSnapShot, &pEntry);
+    while (hRes)
+    {
+        if (strcmp(pEntry.szExeFile, filename) == 0)
+        {
+            HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, 0, (DWORD)pEntry.th32ProcessID);
+            if (hProcess != NULL)
+            {
+                TerminateProcess(hProcess, 9);
+                CloseHandle(hProcess);
+            }
+        }
+        hRes = Process32Next(hSnapShot, &pEntry);
+    }
+    CloseHandle(hSnapShot);
+}
+
+bool checkFileStatus(const char *fileName)
+{
+    cout << fileName;
+    std::vector<DWORD> pids;
+    wstring wstr(fileName, fileName + strlen(fileName));
+    std::wstring targetProcessName = wstr;
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0); // all processes
+
+    PROCESSENTRY32W entry; // current process
+    entry.dwSize = sizeof entry;
+
+    if (!Process32FirstW(snap, &entry)) // start with the first in snapshot
+    {
+        cout << "not found\n";
+        return 0;
+    }
+
+    do
+    {
+        if (std::wstring(entry.szExeFile) == targetProcessName)
+        {
+            pids.emplace_back(entry.th32ProcessID); // name matches; add to list
+        }
+    } while (Process32NextW(snap, &entry)); // keep going until end of snapshot
+
+    for (int i(0); i < pids.size(); ++i)
+    {
+        cout << "PID is: ";
+        std::cout << pids[i] << std::endl;
+        return 1;
     }
 }

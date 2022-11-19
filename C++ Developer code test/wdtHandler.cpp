@@ -7,6 +7,7 @@ int hours = 0;
 int minutes = 0;
 int seconds = 0;
 bool wdtResetFlag = 0;
+
 void timer()
 {
     while (1)

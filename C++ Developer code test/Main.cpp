@@ -27,7 +27,7 @@ int main()
     thread th1(jsonFileLoad);
     thread th2(checkFileModification);
     Sleep(5000);
-    thread th3(timer);
+    // thread th3(timer);
 
     // Wait for thread t1 to finish
     th1.join();
@@ -36,6 +36,6 @@ int main()
     th2.join();
 
     // Wait for thread t2 to finish
-    th3.join();
+    // th3.join();
     return 0;
 }

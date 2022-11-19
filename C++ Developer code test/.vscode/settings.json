@@ -7,7 +7,8 @@
         "ostream": "cpp",
         "thread": "cpp",
         "xiosbase": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+        "sstream": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
